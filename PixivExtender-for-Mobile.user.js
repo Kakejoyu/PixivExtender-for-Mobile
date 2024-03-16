@@ -40,7 +40,7 @@
 // @noframes
 // ==/UserScript==
 
-/*! Pixiv Extender | GPL-3.0 license | https://github.com/Kakejoyu/PixivExtender/blob/main/LICENSE */
+/*! Pixiv Extender | GPL-3.0 license | https://github.com/Kakejoyu/PixivExtender-for-Mobile/blob/main/LICENSE */
 
 jQuery(($) => {
   'use strict';
