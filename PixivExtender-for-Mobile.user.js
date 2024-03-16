@@ -1,17 +1,17 @@
 // ==UserScript==
-// @name        Pixiv Extender
-// @name:ja     Pixiv Extender
-// @name:zh-CN  Pixiv Extender
-// @name:zh-TW  Pixiv Extender
-// @namespace   https://github.com/Kakejoyu/PixivExtender
-// @version     1.3.0
+// @name        Pixiv Extender for Mobile
+// @name:ja     Pixiv Extender for Mobile
+// @name:zh-CN  Pixiv Extender for Mobile
+// @name:zh-TW  Pixiv Extender for Mobile
+// @namespace   https://github.com/Kakejoyu/PixivExtender-for-Mobile
+// @version     0.1.0
 // @icon        https://www.pixiv.net/favicon.ico
-// @description "Pixiv Extender" is a user script derived from "Pixiv Plus" that adds various features to Pixiv. Thanks to Ahaochan, the developer of "Pixiv Plus"!
-// @description:ja    「Pixiv Extender」は、Pixivに様々な機能を追加する「Pixiv Plus」から派生したユーザースクリプトです。「Pixiv Plus」の開発者であるAhaochanに感謝します！
-// @description:zh-CN "Pixiv Extender"是从 "Pixiv Plus "衍生出来的用户脚本，它为 Pixiv 添加了各种功能。 感谢 "Pixiv Plus "的开发者 Ahaochan！
-// @description:zh-TW "Pixiv Extender"是從 "Pixiv Plus "衍生出來的使用者腳本，它為 Pixiv 增加了各種功能。 感謝 "Pixiv Plus "的開發者 Ahaochan！
+// @description [Warning: This script is currently a Beta version. It contains unforeseen bugs and unfinished functionality!] "Pixiv Extender for Mobile" is a user script that adds various functions to Pixiv, a mobile-compatible version of "Pixiv Extender" derived from "Pixiv Plus". Thanks to Ahaochan, the developer of "Pixiv Plus"!
+// @description:ja    [警告：当スクリプトは現在Beta版です。予期せぬ不具合や未完成の機能が含まれています！]「Pixiv Extender for Mobile」は、「Pixiv Plus」から派生した「Pixiv Extender」のモバイル対応版のPixivに様々な機能を追加するユーザースクリプトです。「Pixiv Plus」の開発者であるAhaochanに感謝します！
+// @description:zh-CN [警告： 本脚本目前为测试版。它包含不可预见的错误和未完成的功能！] "Pixiv Extender for Mobile "是一个为 Pixiv 添加各种功能的用户脚本，它是 "Pixiv Plus "衍生出的 "Pixiv Extender "的移动兼容版本。 感谢 "Pixiv Plus "的开发者 Ahaochan！
+// @description:zh-TW [警告： 本腳本目前為測試版。它包含不可預見的錯誤和未完成的功能！] "Pixiv Extender for Mobile "是一個為 Pixiv 添加各種功能的使用者腳本，它是 "Pixiv Plus "衍生出的 "Pixiv Extender "的行動相容版本。 感謝 "Pixiv Plus "的開發者 Ahaochan！
 // @author      Kakejoyu
-// @supportURL  https://github.com/Kakejoyu/PixivExtender/issues
+// @supportURL  https://github.com/Kakejoyu/PixivExtender-for-Mobile/issues
 // @match       http*://www.pixiv.net/*
 // @connect     i.pximg.net
 // @connect     i-f.pximg.net
@@ -185,6 +185,10 @@ jQuery(($) => {
     return status === 200;
   };
 
+  const isDarkMode = () => {
+    return $('body').hasClass('dark');
+  };
+
   // ============================ 配置信息 ====================================
   const GMkeys = {
     MO: 'MO', // MutationObserver 的开关
@@ -249,6 +253,7 @@ jQuery(($) => {
         '{index}はインデックス番号 | {index2}のように「index」のあとに0埋めの桁数を指定できます。\n{pid}は作品ID | {uid}はアーティストID\n{pname}は作品名 | {uname}はアーティスト名\n現在のところ、複数画像のリネームのみがサポートされています。',
       cbz_toggle: '.cbz',
       padLength: '桁数：',
+      previousReplies: '以前の返信を表示',
     },
     en: {
       load_origin: 'Load original images',
@@ -301,6 +306,7 @@ jQuery(($) => {
         '{index} is the index number | You can specify the number of digits after "index" filled with zeros, such as {index2}.\n{pid} is the artwork ID | {uid} is the artist ID\n{pname} is the name of the artwork | {uname} is the name of the artist\nCurrently, only multi-image renaming is supported.',
       cbz_toggle: '.cbz',
       padLength: 'Digits Num.: ',
+      previousReplies: 'Display Previous Replies',
     },
     zh: {
       load_origin: '加载原图',
@@ -352,6 +358,7 @@ jQuery(($) => {
         '{index} 是索引编号 | 您可以指定在 "index "后面用零填充的位数，如 {index2}。\n{pid}是作品id | {uid}是画师id\n{pname}是作品名 | {uname}是画师名\n目前只支持多图像重命名',
       cbz_toggle: '.cbz',
       padLength: '数字：',
+      previousReplies: '查看历史回复',
     },
     'zh-cn': {},
     'zh-tw': {
@@ -404,6 +411,7 @@ jQuery(($) => {
         '{index} 是索引編號 | 您可以指定在 "index "後面用零填充的位數，如 {index2}。\n{pid}是作品id | {uid}是畫師id\n{pname}是作品名 | {uname}是畫師名\n目前只支援多圖像重命名',
       cbz_toggle: '.cbz',
       padLength: '數字：',
+      previousReplies: '查看歷史回復',
     },
   };
   i18nLib['zh-cn'] = $.extend({}, i18nLib.zh);
@@ -415,8 +423,6 @@ jQuery(($) => {
       ['search_enhance', true],
       ['artist_info', true],
       ['comment_load', true],
-      ['artwork_tag', true],
-      ['title_tooltip', true],
       ['redirect_cancel', true],
       ['history_enhance', true],
       ['load_origin', true],
@@ -435,13 +441,11 @@ jQuery(($) => {
       ad_disable: settings[0][1],
       search_enhance: settings[1][1],
       download_able: true,
-      artist_info: settings[2][1],
+      artist_info: false /* settings[2][1] */,
       comment_load: settings[3][1],
-      artwork_tag: settings[4][1],
-      title_tooltip: settings[5][1],
-      redirect_cancel: settings[6][1],
-      history_enhance: settings[7][1],
-      load_origin: settings[8][1],
+      redirect_cancel: settings[4][1],
+      history_enhance: settings[5][1],
+      load_origin: false /* settings[6][1] */,
     });
   };
   const config = initConfig();
@@ -449,7 +453,6 @@ jQuery(($) => {
   // ============================ url 页面判断 ==============================
   const isArtworkPage = () => /.+artworks\/\d+.*/.test(location.href);
   const isMemberIndexPage = () => /.+\/users\/\d+.*/.test(location.href);
-  const isMemberDynamicPage = () => /.+\/stacc.+/.test(location.href);
   const isHistoryPage = () => /.+history\.php.*/.test(location.href);
 
   // 判断是否登录
@@ -478,33 +481,26 @@ jQuery(($) => {
               continue;
             }
 
-            // 親要素のスタイルを修正
-            $('.hHgbLu').css('grid-template-columns', 'repeat(6, auto)');
+            $('.left').after(
+              $(
+                `<a id="pe-setting-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="fill: #858585; width: 24px;"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg></a>`
+              ).on('click', () => {
+                let cssValLib;
+                if (isDarkMode()) {
+                  // ダークテーマ
+                  cssValLib = {
+                    fgBg: '#111111',
+                    fgColor: '#ffffff',
+                  };
+                } else {
+                  // ライトテーマ
+                  cssValLib = {
+                    fgBg: '#ffffff',
+                    fgColor: '#111111',
+                  };
+                }
 
-            $(mutation.target)
-              .find('.sc-1rlbh8f-1.kvBUoX')
-              .after(
-                $(
-                  `<button id="pe-setting-btn" type="button" title="${i18n(
-                    'setting_title'
-                  )}" class="jvCTkj HEHwK"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="fill: currentColor; width: 20px;"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg></button>`
-                ).on('click', () => {
-                  let cssValLib;
-                  if ($('.charcoal-token').attr('data-theme') === 'default') {
-                    // ライトテーマ
-                    cssValLib = {
-                      fgBg: '#ffffff',
-                      fgColor: '#111111',
-                    };
-                  } else {
-                    // ダークテーマ
-                    cssValLib = {
-                      fgBg: '#111111',
-                      fgColor: '#ffffff',
-                    };
-                  }
-
-                  $('body').append(`<div id="pe-bg">
+                $('body').append(`<div id="pe-bg">
     <div id="pe-fg">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="pe-close"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
             <path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"></path>
@@ -522,53 +518,48 @@ jQuery(($) => {
             <label class="pe-toggle-box"><input type="checkbox" name="search_enhance" /><div><div></div></div>${i18n(
               'search_enhance'
             )}</label>
-            <label class="pe-toggle-box"><input type="checkbox" name="artist_info" /><div><div></div></div>${i18n(
+            <!-- <label class="pe-toggle-box"><input type="checkbox" name="artist_info" /><div><div></div></div>${i18n(
               'artist_info'
-            )}</label>
-            <label class="pe-toggle-box"><input type="checkbox" name="title_tooltip" /><div><div></div></div>${i18n(
-              'title_tooltip'
-            )}</label>
+            )}</label> -->
             <label class="pe-toggle-box"><input type="checkbox" name="redirect_cancel" /><div><div></div></div>${i18n(
               'redirect_cancel'
             )}</label>
             <label class="pe-toggle-box"><input type="checkbox" name="history_enhance" /><div><div></div></div>${i18n(
               'history_enhance'
             )}</label>
-            <h2>${i18n('setting_feedPage')}</h2>
-            <label class="pe-toggle-box"><input type="checkbox" name="artwork_tag" /><div><div></div></div>${i18n(
-              'artwork_tag'
-            )}</label>
             <h2>${i18n('setting_artworkPage')}</h2>
-            <label class="pe-toggle-box"><input type="checkbox" name="load_origin" /><div><div></div></div>${i18n(
+            <!-- <label class="pe-toggle-box"><input type="checkbox" name="load_origin" /><div><div></div></div>${i18n(
               'load_origin'
-            )}</label>
+            )}</label> -->
             <label class="pe-toggle-box"><input type="checkbox" name="${
               GMkeys.switchImgSize
             }" /><div><div></div></div>${i18n('setting_switchImgSize')}</label>
-            <label class="pe-toggle-box"><input type="checkbox" name="${
+            <!-- <label class="pe-toggle-box"><input type="checkbox" name="${
               GMkeys.switchImgMulti
-            }" /><div><div></div></div>${i18n('setting_switchImgMulti')}</label>
+            }" /><div><div></div></div>${i18n(
+                  'setting_switchImgMulti'
+                )}</label> -->
             <label class="pe-toggle-box"><input type="checkbox" name="comment_load" /><div><div></div></div>${i18n(
               'comment_load'
             )}</label>
             <label class="pe-toggle-box"><input type="checkbox" name="${
               GMkeys.switchImgPreload
             }" /><div><div></div></div>${i18n(
-                    'setting_switchImgPreload'
-                  )}</label>
+                  'setting_switchImgPreload'
+                )}</label>
             <label class="pe-input-box">${i18n(
               'setting_downloadZipGifName'
             )}<input type="text" name="${
-                    GMkeys.downloadZipGifName
-                  }" placeholder="{pid}" /></label>
+                  GMkeys.downloadZipGifName
+                }" placeholder="{pid}" /></label>
             <button type="button" title="${i18n(
               'setting_help_btn_tooltip'
             )}" class="pe-help-btn" id="pe-zip-gif-name-help">?</button><br>
             <label class="pe-input-box">${i18n(
               'setting_downloadEachFileName'
             )}<input type="text" name="${
-                    GMkeys.downloadEachFileName
-                  }" placeholder="{index}" /></label>
+                  GMkeys.downloadEachFileName
+                }" placeholder="{index}" /></label>
             <button type="button" title="${i18n(
               'setting_help_btn_tooltip'
             )}" class="pe-help-btn" id="pe-each-file-name-help">?</button>
@@ -585,7 +576,7 @@ jQuery(($) => {
     <style>
         body {overflow: hidden;}
         #pe-bg {position: fixed;z-index: 999999;background-color: rgba(0, 0, 0, 0.8);left: 0px;top: 0px;user-select: none;-moz-user-select: none;}
-        #pe-fg {width: 50%;height: 82%;padding: 15px;position: absolute;top: 10%;left: 25%;background: ${
+        #pe-fg {width: 90%;height: 90%;padding: 15px;position: absolute;top: 4%;left: 1%;background: ${
           cssValLib['fgBg']
         };border-radius: 20px;}
         #pe-fg * {margin: 7px 0;font-family: sans-serif;font-size: 15px;color: ${
@@ -602,7 +593,7 @@ jQuery(($) => {
         #pe-fg label.pe-toggle-box input:checked + div {background: #0096fa;}
         #pe-fg label.pe-toggle-box input + div div {position: absolute;width: 24px;height: 24px;background: #ffffff;border-radius: 12px;top: 2px;left: 4%;transition: left 0.05s linear;}
         #pe-fg label.pe-toggle-box input:checked + div div {left: 52%;}
-        #pe-fg label.pe-input-box input {width: 340px;height: 20px;border: 2px solid #8a8a8a;border-radius: 5px;padding: 5px;background: #ffffff;color: #000000;}
+        #pe-fg label.pe-input-box input {width: 80%;height: 20px;border: 2px solid #8a8a8a;border-radius: 5px;padding: 5px;background: #ffffff;color: #000000;}
         #pe-fg button.pe-help-btn {background: #0096fa;color: #ffffff;font-size: 17.5px;border: none;border-radius: 25px;text-align: center;width: 25px;height: 25px;cursor: pointer;vertical-align: middle;}
         #pe-btns {display: flex;justify-content: center;}
         #pe-btns button#pe-save-btn, #pe-btns button#pe-reset-btn {font-size: 20px;width: 100px;height: 40px;border: none;border-radius: 10px;cursor: pointer;color: #ffffff;}
@@ -610,85 +601,73 @@ jQuery(($) => {
         #pe-btns button#pe-reset-btn {background: #b00000;margin-left: 20px;}
     </style>
 </div>`);
-                  $('#pe-zip-gif-name-help').on('click', function () {
-                    alert(i18n('setting_zip_gif_name_description'));
+                $('#pe-zip-gif-name-help').on('click', function () {
+                  alert(i18n('setting_zip_gif_name_description'));
+                });
+                $('#pe-each-file-name-help').on('click', function () {
+                  alert(i18n('setting_each_file_name_description'));
+                });
+                $('#pe-bg').css({
+                  width: document.documentElement.clientWidth + 'px',
+                  height: document.documentElement.clientHeight + 'px',
+                });
+                $('#pe-close').click(function () {
+                  $('#pe-bg').remove();
+                });
+
+                $('#pe-fg')
+                  .find('input[type="checkbox"]')
+                  .each(function () {
+                    const $checkbox = $(this);
+                    const name = $checkbox.attr('name');
+                    GM.getValue(name, true).then((value) => {
+                      $checkbox.prop('checked', value);
+                    });
                   });
-                  $('#pe-each-file-name-help').on('click', function () {
-                    alert(i18n('setting_each_file_name_description'));
+                $('#pe-fg')
+                  .find('input[type="text"]')
+                  .each(function () {
+                    const $input = $(this);
+                    const name = $input.attr('name');
+                    GM.getValue(name).then((value) => {
+                      $input.val(value);
+                    });
                   });
-                  $('#pe-bg').css({
-                    width: document.documentElement.clientWidth + 'px',
-                    height: document.documentElement.clientHeight + 'px',
+
+                $('#pe-fg')
+                  .find('#pe-save-btn')
+                  .on('click', () => {
+                    $('#pe-fg')
+                      .find('input[type="checkbox"]')
+                      .each(function () {
+                        const $checkbox = $(this);
+                        const name = $checkbox.attr('name');
+                        const checked = $checkbox.prop('checked');
+                        GM.setValue(name, checked);
+                      });
+                    $('#pe-fg')
+                      .find('input[type="text"]')
+                      .each(function () {
+                        const $input = $(this);
+                        const name = $input.attr('name');
+                        GM.setValue(name, $input.val());
+                      });
+                    location.reload();
                   });
-                  let resizeTimer = null;
-                  $(window).on('resize', () => {
-                    if (resizeTimer !== null) {
-                      clearTimeout(resizeTimer);
+                $('#pe-fg')
+                  .find('#pe-reset-btn')
+                  .on('click', () => {
+                    if (confirm(i18n('setting_reset_confirm'))) {
+                      GM.listValues().then((keys) => {
+                        keys.forEach((key) => {
+                          GM.deleteValue(key);
+                        });
+                        location.reload();
+                      });
                     }
-                    resizeTimer = setTimeout(() => {
-                      $('#pe-bg').css({
-                        width: document.documentElement.clientWidth + 'px',
-                        height: document.documentElement.clientHeight + 'px',
-                      });
-                    }, 500);
                   });
-                  $('#pe-close').click(function () {
-                    $('#pe-bg').remove();
-                  });
-
-                  $('#pe-fg')
-                    .find('input[type="checkbox"]')
-                    .each(function () {
-                      const $checkbox = $(this);
-                      const name = $checkbox.attr('name');
-                      GM.getValue(name, true).then((value) => {
-                        $checkbox.prop('checked', value);
-                      });
-                    });
-                  $('#pe-fg')
-                    .find('input[type="text"]')
-                    .each(function () {
-                      const $input = $(this);
-                      const name = $input.attr('name');
-                      GM.getValue(name).then((value) => {
-                        $input.val(value);
-                      });
-                    });
-
-                  $('#pe-fg')
-                    .find('#pe-save-btn')
-                    .on('click', () => {
-                      $('#pe-fg')
-                        .find('input[type="checkbox"]')
-                        .each(function () {
-                          const $checkbox = $(this);
-                          const name = $checkbox.attr('name');
-                          const checked = $checkbox.prop('checked');
-                          GM.setValue(name, checked);
-                        });
-                      $('#pe-fg')
-                        .find('input[type="text"]')
-                        .each(function () {
-                          const $input = $(this);
-                          const name = $input.attr('name');
-                          GM.setValue(name, $input.val());
-                        });
-                      location.reload();
-                    });
-                  $('#pe-fg')
-                    .find('#pe-reset-btn')
-                    .on('click', () => {
-                      if (confirm(i18n('setting_reset_confirm'))) {
-                        GM.listValues().then((keys) => {
-                          keys.forEach((key) => {
-                            GM.deleteValue(key);
-                          });
-                          location.reload();
-                        });
-                      }
-                    });
-                })
-              );
+              })
+            );
           }
         });
       },
@@ -699,19 +678,13 @@ jQuery(($) => {
       'ad_disable',
       null,
       () => {
-        GM_addStyle(`.premium-ad,/* 閲覧履歴ページのpremiumのバナー */
-.cugra.sc-4nj1pr-4,
-div.sc-jgyytr-1:nth-of-type(4),
-div.sc-jgyytr-1:nth-of-type(3),
-.csPOOw.sc-93qi7v-0,
-#premium_noads,
-.settingNavi p:nth-of-type(6),
-.title > .trial,
-iframe,
-._premium-lead-promotion-banner,
-a[href="/premium/lead/lp/?g=anchor&i=popular_works_list&p=popular&page=visitor"],
-a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
+        GM_addStyle(`.premium-lead-t-side-menu-mini-profile, /* メニューのPremium無料体験広告 */
+        .wc-menu > ul:nth-child(12) > li:nth-child(2), /* メニューの広告非表示リンク */
+        .premium-lead-t-footer, .premium-denki-t-footer, .premium-dmm-t-footer /* フッターのPremium広告 */ {
     display: none !important;
+}
+.premium-icon-after::after{
+background: none;
 }`);
       },
       () => true,
@@ -725,21 +698,14 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
           for (let i = 0, len = mutations.length; i < len; i++) {
             const mutation = mutations[i];
             // 1. 判断是否改变节点, 或者是否有[form]节点
-            const $form = $(
-              '#js-mount-point-header form:not([action]), #root div[style="position: static; z-index: auto;"] form:not([action])'
-            );
-            if (mutation.type !== 'childList' || !$form.length) {
+            const $form = $('.search-form');
+            if (
+              mutation.type !== 'childList' ||
+              !$form.length ||
+              $('#pe-search-help').length > 0
+            ) {
               continue;
             }
-
-            // 2. 親要素のグリッドを調整
-            $form
-              .parent()
-              .parent()
-              .css(
-                'grid-template-columns',
-                '1fr minmax(0px, 528px) minmax(0px, 50px) 1fr'
-              );
 
             (($form) => {
               const numberList = [
@@ -769,27 +735,25 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
                 '700000',
                 '800000',
               ];
-              const $input = $form.find('input[type="text"]:first');
+              const $input = $form.find('.text-input');
 
-              $form.parent().after(
-                $(`<button type="button" title="${i18n(
-                  'search_help_title'
-                )}" class="jvCTkj HEHwK">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="fill: currentColor; width: 20px;"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM169.8 165.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V250.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1H222.6c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg></button>`).on(
+              $('.search-close-icon').before(
+                $(`<span style="position: absolute;left: 12px;top: 12px;" id="pe-search-help">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="fill: #858585; width: 24px;"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM169.8 165.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V250.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1H222.6c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg></span>`).on(
                   'click',
                   () => {
                     let cssValLib;
-                    if ($('.charcoal-token').attr('data-theme') === 'default') {
-                      cssValLib = {
-                        fgBg: '#ffffff',
-                        fgColor: '#111111',
-                        codeBg: '#bdbdbd',
-                      };
-                    } else {
+                    if (isDarkMode()) {
                       cssValLib = {
                         fgBg: '#111111',
                         fgColor: '#ffffff',
                         codeBg: '#191919',
+                      };
+                    } else {
+                      cssValLib = {
+                        fgBg: '#ffffff',
+                        fgColor: '#111111',
+                        codeBg: '#bdbdbd',
                       };
                     }
                     $('#pe-bg').remove();
@@ -804,8 +768,8 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
     </div>
     <style>
         body {overflow: hidden;}
-        #pe-bg {position: fixed;z-index: 999999;background-color: rgba(0, 0, 0, 0.8);left: 0px;top: 0px;-moz-user-select: none;user-select: none;}
-        #pe-fg {width: 50%;height: 80%;padding: 15px;position: absolute;top: 10%;left: 25%;background: ${
+        #pe-bg {position: fixed;z-index: 9999999999;background-color: rgba(0, 0, 0, 0.8);left: 0px;top: 0px;-moz-user-select: none;user-select: none;}
+        #pe-fg {width: 90%;height: 90%;padding: 15px;position: absolute;top: 4%;left: 1%;background: ${
           cssValLib['fgBg']
         };border-radius: 20px;}
         #pe-fg * {margin: 7px 0;font-family: sans-serif;font-size: 15px;color: ${
@@ -822,18 +786,6 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
                     $('#pe-bg').css({
                       width: document.documentElement.clientWidth + 'px',
                       height: document.documentElement.clientHeight + 'px',
-                    });
-                    let resizeTimer = null;
-                    $(window).on('resize', () => {
-                      if (resizeTimer !== null) {
-                        clearTimeout(resizeTimer);
-                      }
-                      resizeTimer = setTimeout(() => {
-                        $('#pe-bg').css({
-                          width: document.documentElement.clientWidth + 'px',
-                          height: document.documentElement.clientHeight + 'px',
-                        });
-                      }, 500);
                     });
                     $('#pe-close').click(function () {
                       $('#pe-bg').remove();
@@ -970,9 +922,6 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
                 }
               });
             })($form);
-
-            observer.disconnect();
-            break;
           }
         }),
       () => true,
@@ -995,7 +944,18 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
             option
           );
           const $downloadButtonContainer =
-            options.$shareButtonContainer.clone();
+            $(`<div style="position: relative;margin-right: 10px;">
+            <button type="button" style="border: 1px solid transparent;background: transparent;color: inherit;width: 32px;height: 32px;margin: 0;padding: 0;background: transparent;border: none;cursor: pointer;" aria-haspopup="true">
+            <svg viewBox="0 0 32 32" size="32" style="stroke: none;fill: currentcolor;width: 32px;height: 32px;line-height: 0;font-size: 0px;vertical-align: middle;"><path d="M17,9.91842728 L17,18.0042137 C17,18.5564985 16.5522847,19.0042137 16,19.0042137
+C15.4477153,19.0042137 15,18.5564985 15,18.0042137 L15,9.91842728 L11.7071068,13.2113205
+C11.3165825,13.6018448 10.6834175,13.6018448 10.2928932,13.2113205
+C9.90236893,12.8207962 9.90236893,12.1876312 10.2928932,11.7971069 L16,6.09000015 L21.7071068,11.7971069
+C22.0976311,12.1876312 22.0976311,12.8207962 21.7071068,13.2113205
+C21.3165825,13.6018448 20.6834175,13.6018448 20.2928932,13.2113205 L17,9.91842728 Z
+M25,17 L25,24 C25,25.6568542 23.6568542,27 22,27 L10,27 C8.34314575,27 7,25.6568542 7,24 L7,17
+C7,16.4477153 7.44771525,16 8,16 C8.55228475,16 9,16.4477153 9,17 L9,24
+C9,24.5522847 9.44771525,25 10,25 L22,25 C22.5522847,25 23,24.5522847 23,24 L23,17
+C23,16.4477153 23.4477153,16 24,16 C24.5522847,16 25,16.4477153 25,17 Z" transform=""></path></svg></button></div>`).clone();
           $downloadButtonContainer
             .addClass('pe-download-btn')
             .attr('id', options.id)
@@ -1009,7 +969,7 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
             .find('button')
             .css('transform', 'rotate(180deg)')
             .on('click', options.clickFun);
-          options.$shareButtonContainer.after($downloadButtonContainer);
+          options.$shareButtonContainer.append($downloadButtonContainer);
           return $downloadButtonContainer;
         };
         // 单图显示图片尺寸 https://www.pixiv.net/artworks/109953681
@@ -1108,10 +1068,8 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
         const isSingleMode = () =>
           (illust().illustType === 0 || illust().illustType === 1) &&
           illust().pageCount === 1;
-        const selectorShareBtn = await GM.getValue(
-          GMkeys.selectorShareBtn,
-          '.bTImJG'
-        ); // section 下的 div
+        const selectorShareBtn =
+          '.work-interactions-panel-item.gtm-work-interactions-share';
 
         // 热修复下载按钮的className
         const a = () =>
@@ -1140,8 +1098,8 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
               for (let i = 0, len = mutations.length; i < len; i++) {
                 const mutation = mutations[i];
                 const $target = $(mutation.target);
-                const replaceImg = ($target, attr, value) => {
-                  const oldValue = $target.attr(attr);
+                const replaceImg = ($target) => {
+                  const oldValue = $target.attr('src');
                   if (
                     new RegExp(
                       `https?://i(-f|-cf)?\.pximg\.net.*\/${illust().id}_.*`
@@ -1150,25 +1108,41 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
                       `https?://i(-f|-cf)?\.pximg\.net/img-original.*`
                     ).test(oldValue)
                   ) {
-                    $target.attr(attr, value).css('filter', 'none');
+                    $target
+                      .attr(
+                        'src',
+                        $target
+                          .attr('src')
+                          .replace('master', 'origin')
+                          .replace('_master1200', '')
+                      )
+                      .css('filter', 'none');
                     $target.fitWindow();
                   }
                 };
-
+                /* if ($('.work-thumb').not('.processed').length > 0) {
+                  $('.work-thumb').addClass('processed');
+                  $('.work-thumb')
+                    .attr('referrerpolicy', 'origin')
+                    .attr(
+                      'src',
+                      $('.work-thumb')
+                        .attr('src')
+                        .replace(
+                          'c/600x1200_90_webp/img-master',
+                          'img-original'
+                        )
+                        .replace('_master1200', '')
+                    );
+                } */
                 // 1. 单图、多图 DOM 结构都为 <a href=""><img/></a>
-                const $link = $target.find('img[src]');
-                $link.each(function () {
+                const $img = $target.find('img[data-big]');
+                $img.each(function () {
                   const $this = $(this);
-                  const href = $this.parent('a').attr('href');
-                  if (
-                    !!href &&
-                    (href.endsWith('jpg') || href.endsWith('png'))
-                  ) {
-                    if (config.load_origin) {
-                      replaceImg($this, 'src', href);
-                    }
-                    addImgSize({ $img: $this }); // 显示图片大小
-                  }
+                  /* if (config.load_origin) {
+                    replaceImg($this);
+                  } */
+                  addImgSize({ $img: $this }); // 显示图片大小
                 });
 
                 // 2. 移除马赛克遮罩, https://www.pixiv.net/member_illust.php?mode=medium&illust_id=50358638
@@ -1190,7 +1164,20 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
               const $target = $(mutation.target);
 
               // 1. 单图、多图、gif图三种模式
-              const $shareBtn = $target.find(selectorShareBtn);
+              let fontColor = '#000';
+              if (isDarkMode()) {
+                fontColor = '#fff';
+              }
+              if (!$('#pe-download-ui').length) {
+                $(selectorShareBtn)
+                  .parent()
+                  .after(
+                    $(
+                      `<div id="pe-download-ui" style="display: flex;justify-content: flex-end;"><style>#pe-download-ui>*{margin: 5px;color:${fontColor};}</style></div>`
+                    )
+                  );
+              }
+              const $shareBtn = $target.find('#pe-download-ui');
 
               const $canvas = $target.find('canvas');
               // 2. 显示图片大小
@@ -1357,7 +1344,20 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
               const $target = $(mutation.target);
 
               // 1. 单图、多图、gif图三种模式
-              const $shareBtn = $target.find(selectorShareBtn);
+              let fontColor = '#000';
+              if (isDarkMode()) {
+                fontColor = '#fff';
+              }
+              if (!$('#pe-download-ui').length) {
+                $(selectorShareBtn)
+                  .parent()
+                  .after(
+                    $(
+                      `<div id="pe-download-ui" style="display: flex;justify-content: flex-end;"><style>#pe-download-ui>*{margin: 5px;color:${fontColor};}</style></div>`
+                    )
+                  );
+              }
+              const $shareBtn = $target.find('#pe-download-ui');
               if (
                 !isMoreMode() ||
                 mutation.type !== 'childList' ||
@@ -1366,11 +1366,29 @@ a[href="/premium/lead/lp/?g=anchor&i=work_detail_remove_ads"] {
               ) {
                 continue;
               }
+              // 現在のURLを取得しておく
+              let oldURL =
+                location.protocol +
+                '//' +
+                location.hostname +
+                location.pathname;
 
               // 2. 查看全部图片
               GM.getValue(GMkeys.switchImgMulti, true).then((open) => {
-                if (open) {
-                  $shareBtn.parent('section').next('button').click();
+                if (
+                  open &&
+                  oldURL !==
+                    location.protocol +
+                      '//' +
+                      location.hostname +
+                      location.pathname
+                ) {
+                  oldURL =
+                    location.protocol +
+                    '//' +
+                    location.hostname +
+                    location.pathname;
+                  $('.work-details-thumb-buttons').find('.button-link').click();
                 }
               });
 
@@ -1487,15 +1505,22 @@ label.pe-toggle-box input:checked + div div {left: 52%;}</style>`
                   );
                 })
               );
+              let padPlaceholder = 1;
+              if (
+                /\{index(\d{1,})\}/.test(
+                  GM_getValue(GMkeys.downloadEachFileName, '{index}')
+                )
+              ) {
+                padPlaceholder = GM_getValue(
+                  GMkeys.downloadEachFileName,
+                  '{index}'
+                ).match(/\{index(\d{0,})\}/)[1];
+              }
               $('#pe-download-zip').before(
                 $(
                   `<label class="pe-input-box" id="pe-pad-length-label">${i18n(
                     'padLength'
-                  )}<input type="text" id="pe-pad-length" placeholder="${
-                    GM_getValue(GMkeys.downloadEachFileName, '{index}').match(
-                      /\{index(\d{0,})\}/
-                    )[1] || '1'
-                  }" /></label><style>label.pe-input-box input#pe-pad-length {width: 50px;height: 20px;border: 2px solid #8a8a8a;border-radius: 5px;padding: 5px;background: #ffffff;color: #000000;margin-right: 5px;}</style>`
+                  )}<input type="text" id="pe-pad-length" placeholder="${padPlaceholder}" /></label><style>label.pe-input-box input#pe-pad-length {width: 50px;height: 20px;border: 2px solid #8a8a8a;border-radius: 5px;padding: 5px;background: #ffffff;color: #000000;margin-right: 5px;}</style>`
                 )
               );
 
@@ -1608,26 +1633,25 @@ label.pe-toggle-box input:checked + div div {left: 52%;}</style>`
             for (let i = 0, len = mutations.length; i < len; i++) {
               const mutation = mutations[i];
               // 1. 判断是否改变节点, 或者是否有[section]节点
-              const $aside = $(mutation.target)
-                .parent()
-                .find('main')
-                .next('aside');
+              const $unameDiv = $(mutation.target).find(
+                'div.user-details-card:nth-child(2) > div:nth-child(2)'
+              );
               if (
                 mutation.type !== 'childList' ||
-                $aside.length <= 0 ||
+                $unameDiv.length <= 0 ||
                 !isArtworkPage()
               ) {
                 continue;
               }
 
-              const $row = $aside.find('section:first').find('h2');
+              const $row = $unameDiv.find('h2');
 
               const uid = getUid();
               const background = preloadData.user[uid].background;
               const url = (background && background.url) || '';
               if (
                 $row.length <= 0 ||
-                $aside.find('#pe-background').length > 0
+                $unameDiv.find('#pe-background').length > 0
               ) {
                 if (
                   $('#pe-uid').find('a').text() !== `UID: ${uid}` &&
@@ -1647,9 +1671,9 @@ label.pe-toggle-box input:checked + div div {left: 52%;}</style>`
               }
 
               // 2. 显示画师背景图
-              const $bgDiv = $row.clone().attr('id', 'pe-background');
-              $bgDiv.children('a').remove();
-              $bgDiv.children('div').children('div').remove();
+              const $bgDiv = $(
+                `<h2 style="display: flex;-moz-box-align: center;align-items: center;margin: 0px;margin-top: 0px;font-size: 1em;" id="pe-background"><div aria-haspopup="true" style="display: flex;-moz-box-align: center;align-items: center;"></div></h2>`
+              );
               $bgDiv.prepend(
                 `<img src="${url}" style="margin-right: 3px;width: 10%;"/>`
               );
@@ -1731,8 +1755,6 @@ label.pe-toggle-box input:checked + div div {left: 52%;}</style>`
       'comment_load',
       null,
       () => {
-        const skipButton = i18n('watchlist');
-        const moreReplaySelector = '._28zR1MQ';
         return observerFactory((mutations, observer) => {
           if (!open || !isArtworkPage()) {
             return;
@@ -1743,112 +1765,24 @@ label.pe-toggle-box input:checked + div div {left: 52%;}</style>`
             if (mutation.type !== 'childList') {
               continue;
             }
-
-            // 2. 模拟点击加载按钮
-            const $moreCommentBtns = $(
-              "div > div:eq(2) > div div[role='button']"
-            );
-            let $moreCommentBtn = $moreCommentBtns[0];
-
-            if ($moreCommentBtn) {
-              if ($moreCommentBtn.textContent === skipButton) {
-                if ($moreCommentBtns.length > 1) {
-                  $moreCommentBtn = $moreCommentBtns[1];
-                  $moreCommentBtn.click();
-                }
-              } else {
-                $moreCommentBtn.click();
-              }
-            }
-
-            const $moreReplayBtn = $(mutation.target).find(moreReplaySelector);
-            $moreReplayBtn.click();
-          }
-        });
-      },
-      () => true,
-    ],
-    // 7. 对主页动态中的图片标记作品类型
-    [
-      'artwork_tag',
-      null,
-      () => {
-        const illustTitleSelector = '.stacc_ref_illust_title';
-        return observerFactory((mutations, observer) => {
-          for (let i = 0, len = mutations.length; i < len; i++) {
-            const mutation = mutations[i];
-            // 1. 判断是否改变节点
-            const $title = $(mutation.target).find(illustTitleSelector);
-            if (mutation.type !== 'childList' || !$title.length) {
-              continue;
-            }
-
-            $title.each(function () {
-              const $a = $(this).find('a');
-              // 1. 已经添加过标记的就不再添加
-              if (!!$a.attr('pe-illust-id')) {
-                return;
-              }
-              // 2. 获取pid, 设置标记避免二次生成
-              const illustId = new URL(
-                `${location.origin}/${$a.attr('href')}`
-              ).searchParams.get('illust_id');
-              $a.attr('pe-illust-id', illustId);
-              // 3. 调用官方api, 判断作品类型
-              $.ajax({
-                url: `/ajax/illust/${illustId}`,
-                dataType: 'json',
-                success: ({ body }) => {
-                  const illustType = parseInt(body.illustType);
-                  const isMultiPic = parseInt(body.pageCount) > 1;
-                  switch (illustType) {
-                    case 0:
-                    case 1:
-                      $a.after(
-                        `<p>${
-                          isMultiPic
-                            ? i18n('illust_type_multiple')
-                            : i18n('illust_type_single')
-                        }</p>`
-                      );
-                      break;
-                    case 2:
-                      $a.after(`<p>${i18n('illust_type_gif')}</p>`);
-                      break;
-                  }
-                },
+            $(mutation.target)
+              .find('.comment-replies')
+              .each(function (i, elm) {
+                $(elm)
+                  .find('.ui-button.ma-16.action-button.small')
+                  .not('.clicked')
+                  .click()
+                  .addClass('clicked');
+                $(elm)
+                  .find(
+                    `.ui-button.ma-16.action-button.small.clicked:contains("${i18n(
+                      'previousReplies'
+                    )}")`
+                  )
+                  .not('.clicked2')
+                  .click()
+                  .addClass('clicked2');
               });
-            });
-          }
-        });
-      },
-      () => isMemberDynamicPage(),
-    ],
-    [
-      'title_tooltip',
-      null,
-      () => {
-        return observerFactory((mutations, observer) => {
-          for (let i = 0, len = mutations.length; i < len; i++) {
-            const mutation = mutations[i];
-
-            if (mutation.type !== 'childList') {
-              continue;
-            }
-
-            const $titleElm1 = $(mutation.target).find('a.bOcolJ');
-            $titleElm1.each(function () {
-              const $this = $(this);
-              const title = $this.text();
-              $this.attr('title', title);
-            });
-
-            const $titleElm2 = $(mutation.target).find('a.hduKTf');
-            $titleElm2.each(function () {
-              const $this = $(this);
-              const title = $this.text();
-              $this.attr('title', title);
-            });
           }
         });
       },
@@ -1887,108 +1821,11 @@ label.pe-toggle-box input:checked + div div {left: 52%;}</style>`
       'history_enhance',
       null,
       () => {
-        GM_addStyle(`.pe-illust-type{
-    vertical-align: middle;color: #3f3f3f;
-}`);
-        return observerFactory((mutations, observer) => {
-          for (let i = 0, len = mutations.length; i < len; i++) {
-            const mutation = mutations[i];
-            if (mutation.type !== 'childList') {
-              continue;
-            }
-            $(mutation.target)
-              .find('span._history-item.trial')
-              .each(function () {
-                let url = /http.*?\.jpg/.exec($(this).attr('style'))[0];
-                let pid = /\/\d*?_/.exec(url)[0].slice(1, -1);
-                $(this)
-                  .removeClass('trial')
-                  .addClass('pe-history')
-                  .append(
-                    $(
-                      `<a href="/artworks/${pid}" target="_blank" style="display: block; width: 100%; height: 100%;"></a><div class="status"></div>`
-                    )
-                  );
-                const statusElm = $(this).find('.status');
-                $.ajax({
-                  url: `/ajax/illust/${pid}`,
-                  dataType: 'json',
-                  success: ({ body }) => {
-                    if (body.likeData === 'true') {
-                      statusElm.append(
-                        `<span><i class="_icon-20 _icon-smile"></i></span>`
-                      );
-                    }
-                    if (body.bookmarkData) {
-                      statusElm.append(
-                        `<span class="_bookmark-icon-like-icon-font white"></span>`
-                      );
-                    }
-                    const illustType = parseInt(body.illustType);
-                    const isMultiPic = parseInt(body.pageCount) > 1;
-                    switch (illustType) {
-                      case 0:
-                      case 1:
-                        statusElm.append(
-                          `<span class="pe-illust-type">${
-                            isMultiPic
-                              ? i18n('illust_type_multiple')
-                              : i18n('illust_type_single')
-                          }</span>`
-                        );
-                        break;
-                      case 2:
-                        statusElm.append(
-                          `<span class="pe-illust-type">${i18n(
-                            'illust_type_gif'
-                          )}</span>`
-                        );
-                        break;
-                    }
-                  },
-                });
-              });
-            $(mutation.target)
-              .find('a._history-item:not(.pe-history)')
-              .each(function () {
-                let url = /http.*?\.jpg/.exec($(this).attr('style'))[0];
-                let pid = /\/\d*?_/.exec(url)[0].slice(1, -1);
-                const statusElm = $(this).find('.status');
-                $.ajax({
-                  url: `/ajax/illust/${pid}`,
-                  dataType: 'json',
-                  success: ({ body }) => {
-                    const illustType = parseInt(body.illustType);
-                    const isMultiPic = parseInt(body.pageCount) > 1;
-                    switch (illustType) {
-                      case 0:
-                      case 1:
-                        statusElm.append(
-                          `<span class="pe-illust-type">${
-                            isMultiPic
-                              ? i18n('illust_type_multiple')
-                              : i18n('illust_type_single')
-                          }</span>`
-                        );
-                        break;
-                      case 2:
-                        statusElm.append(
-                          `<span class="pe-illust-type">${i18n(
-                            'illust_type_gif'
-                          )}</span>`
-                        );
-                        break;
-                    }
-                  },
-                });
-                $(this)
-                  .addClass('pe-history')
-                  .on('click', function (e) {
-                    e.stopImmediatePropagation();
-                  });
-              });
-          }
-        });
+        GM_addStyle(`.works-hide-screen,
+        .premium-prompt-wrap{
+          display: none !important;
+        }
+        `);
       },
       () => isHistoryPage(),
     ],
