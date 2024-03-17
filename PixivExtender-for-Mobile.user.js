@@ -4,7 +4,7 @@
 // @name:zh-CN  Pixiv Extender for Mobile
 // @name:zh-TW  Pixiv Extender for Mobile
 // @namespace   https://github.com/Kakejoyu/PixivExtender-for-Mobile
-// @version     0.1.0
+// @version     0.1.1
 // @icon        https://www.pixiv.net/favicon.ico
 // @description [Warning: This script is currently a Beta version. It contains unforeseen bugs and unfinished functionality!] "Pixiv Extender for Mobile" is a user script that adds various functions to Pixiv, a mobile-compatible version of "Pixiv Extender" derived from "Pixiv Plus". Thanks to Ahaochan, the developer of "Pixiv Plus"!
 // @description:ja    [警告：当スクリプトは現在Beta版です。予期せぬ不具合や未完成の機能が含まれています！]「Pixiv Extender for Mobile」は、「Pixiv Plus」から派生した「Pixiv Extender」のモバイル対応版のPixivに様々な機能を追加するユーザースクリプトです。「Pixiv Plus」の開発者であるAhaochanに感謝します！
@@ -1909,7 +1909,7 @@ label.pe-toggle-box input:checked + div div {left: 52%;}</style>`
     }
   };
 
-  // 10. 兼容模式检测是否PJAX并刷新页面, https://stackoverflow.com/a/4585031/6335926
+  /*   // 10. 兼容模式检测是否PJAX并刷新页面, https://stackoverflow.com/a/4585031/6335926
   ((history) => {
     const pushState = history.pushState;
     history.pushState = function (state) {
@@ -1924,5 +1924,5 @@ label.pe-toggle-box input:checked + div div {left: 52%;}</style>`
       });
       return pushState.apply(history, arguments);
     };
-  })(window.history);
+  })(window.history); */
 });
